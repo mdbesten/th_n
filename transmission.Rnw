@@ -1,0 +1,84 @@
+\documentclass{scrartcl}
+\usepackage[english]{babel}
+\usepackage{natbib,hyperref}
+
+\hypersetup{%
+  pdfauthor={Matthijs den Besten},%
+  pdftitle={Transmission},%
+  colorlinks=false%
+}
+\author{Matthijs den Besten\thanks{Montpellier Business School, \copyright \href{http://creativecommons.org/licenses/by/4.0/}{CC-BY}}}
+\title{Transmission, an indicator of synergy reimplemented}
+\begin{document}
+\maketitle
+
+The code below implements Leydesdorff's $T$ (\cite{leydesdorff_routine_2012}) derived from Shannon's $H$ in $R$ (\cite{Rcore}). Leydesdorff's own implementation in another language is available at \url{http://www.leydesdorff.net/th}.
+
+Transmission ($T$) or mutual information among components is defined as the sum of each component's entropy (Shannon's $H$) minus the joint entropy of each pair of components plus the joint entropy of each triplet of components, etcetera.
+
+
+In order to compute the transmission value of a set of variables we first need to list all combinations of these variables.
+
+<<>>=
+list.combinations <- function(variable.names) {
+  require(utils);
+  n <- length(variable.names);
+  return(lapply(1:n, function(m) combn(variable.names, m)));
+}
+@
+
+The joint entropy for combinations of variables is based on the number of observation in each contingency. The function {\sf joint entropy\/} extends the function {\sf entropy\/} \cite{entropy}.
+<<>>=
+# use default arguments of entropy function
+joint.entropy.vanilla <- function(...) {
+  require(entropy);
+  entropy(summary(factor(paste(list(...))), maxsum=Inf));
+}
+
+# separately specify entropy arguments
+joint.entropy <- function(var.list, ...) {
+  require(entropy);
+  if(is.data.frame(var.list)) {
+    counts <- summary(as.factor(apply(apply(var.list, 2, as.character), 
+                                      1, paste, collapse="")), maxsum=Inf);
+  } else {
+    counts <- summary(as.factor(var.list), maxsum=Inf)  
+  }
+  return(entropy(counts, ...));
+}
+@ 
+
+The joint entropy is computed for each combination of variables in the set.
+
+<<>>=
+apply.combn <- function(input, ...) {
+  return(lapply(list.combinations(names(input)), 
+                function(el) {
+                  apply(el, 2, 
+                        function(col) {
+                          joint.entropy(input[,col], ...);
+                        })}));
+}
+@ 
+
+Transmission is defined as the sum all entropies derived from an odd number of variables minus the sum of all entropies derived from an even number of variables.
+
+<<>>=
+transmission <- function(...) {
+  entropies <- apply.combn(...);
+  return(sum(sapply(entropies, sum)*ifelse(1:length(entropies)%%2, 1, -1)));
+}
+@ 
+
+Leydesdorff measures entropy in bits and presumably uses maximum likelihood.
+
+<<>>=
+T.leydesdorff <- function(...) {
+  transmission(unit="log2", method="ML", ...);
+}
+@
+
+\bibliography{transmission}
+\bibliographystyle{apalike}
+
+\end{document}
