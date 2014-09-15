@@ -12,7 +12,7 @@
 \begin{document}
 \maketitle
 
-The code below implements Leydesdorff's $T$ (\cite{leydesdorff_routine_2012}) derived from Shannon's $H$ in $R$ (\cite{Rcore}). Leydesdorff's own implementation in another language is available at \url{http://www.leydesdorff.net/th}.
+The code below implements Leydesdorff's $T$ (\cite{leydesdorff_routine_2012}) derived from Shannon's $H$ in $R$ (\cite{Rcore}). Leydesdorff's own implementation in another language is available at \url{http://www.leydesdorff.net/software/th4}.
 
 Transmission ($T$) or mutual information among components is defined as the sum of each component's entropy (Shannon's $H$) minus the joint entropy of each pair of components plus the joint entropy of each triplet of components, etcetera.
 
